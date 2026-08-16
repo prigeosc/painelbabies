@@ -1,26 +1,17 @@
-/* =========================================================================
-   SINCRONIZAÇÃO ENTRE DISPOSITIVOS (Firebase)
-   -------------------------------------------------------------------------
-   Deixe como está (FIREBASE_CONFIG = null) e o painel funciona só neste
-   navegador, sem sincronizar com outros dispositivos.
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-   Para ativar a sincronização entre celular, computador etc., siga o
-   passo a passo da secao "Sincronizacao entre dispositivos" no
-   README.md, crie um projeto gratuito no Firebase, e cole aqui os dados
-   que ele te der: apague a linha "const FIREBASE_CONFIG = null;" abaixo
-   e descomente o bloco de exemplo logo depois, preenchendo com os seus
-   dados.
-   ========================================================================= */
-
-const FIREBASE_CONFIG = null;
-
-/*
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSy...",
-  authDomain: "seu-projeto.firebaseapp.com",
-  projectId: "seu-projeto",
-  storageBucket: "seu-projeto.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBilCAAiu3R-03euKZFUx2xMConZFG6eBI",
+  authDomain: "paineldospets.firebaseapp.com",
+  projectId: "paineldospets",
+  storageBucket: "paineldospets.firebasestorage.app",
+  messagingSenderId: "995192692618",
+  appId: "1:995192692618:web:15b56b65099b6264717273"
 };
-*/
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
