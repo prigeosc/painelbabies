@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel dos Pets · Kyra, Maurício & Farofa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-900:#172A20;
+    --ink-800:#1F3527;
+    --ink-700:#28422F;
+    --ink-line: rgba(244,240,224,.14);
+    --paper:#EFE9D8;
+    --card:#FBF7EA;
+    --card-2:#F4EEDC;
+    --line:#D9CFAE;
+    --text-900:#22301F;
+    --text-600:#5E6B57;
+    --text-400:#8A9484;
+    --brass:#B4842A;
+    --brass-ink:#7A5A1C;
+    --coral:#BD432A;
+    --coral-ink:#8C3220;
+    --teal:#2E7A61;
+    --teal-ink:#1E5A46;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --shadow-card: 0 1px 0 rgba(34,48,32,.04), 0 8px 20px -12px rgba(34,48,32,.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--text-900);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{font-family:'Fraunces', serif;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  button{font-family:inherit;}
+  a{color:inherit;}
+
+  /* ===== Layout shell ===== */
+  .shell{
+    display:grid;
+    grid-template-columns: 264px 1fr;
+    min-height:100vh;
+  }
+  .sidebar{
+    background: linear-gradient(180deg, var(--ink-900), var(--ink-800) 60%, var(--ink-900));
+    color:#F4F0E0;
+    padding:24px 18px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:0 4px;
+  }
+  .brand svg{flex:none;}
+  .brand-text .kicker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:#A9BFA8;
+    margin:0 0 2px;
+  }
+  .brand-text h1{
+    font-size:19px;
+    margin:0;
+    font-weight:600;
+    letter-spacing:.01em;
+    color:#F8F5E6;
+  }
+
+  .pet-nav{display:flex; flex-direction:column; gap:10px;}
+  .pet-tag{
+    --tag-color:#B4842A;
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:11px;
+    background:var(--ink-700);
+    border:1px solid rgba(244,240,224,.08);
+    color:#F4F0E0;
+    padding:10px 14px 10px 14px;
+    border-radius:10px 4px 4px 10px;
+    cursor:pointer;
+    text-align:left;
+    transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+    box-shadow:0 1px 0 rgba(0,0,0,.2);
+  }
+  .pet-tag::before{
+    content:"";
+    position:absolute;
+    left:6px; top:6px;
+    width:6px; height:6px;
+    border-radius:50%;
+    background:var(--ink-900);
+    box-shadow: inset 0 0 0 1px rgba(244,240,224,.35), 0 0 0 2px var(--tag-color);
+  }
+  .pet-tag:hover{transform: rotate(-1deg) translateX(2px); background:#2A4732;}
+  .pet-tag.active{
+    background: linear-gradient(90deg, rgba(180,132,42,.22), var(--ink-700));
+    box-shadow: inset 3px 0 0 0 var(--tag-color), 0 1px 0 rgba(0,0,0,.2);
+  }
+  .pet-photo{
+    width:34px; height:34px; border-radius:50%;
+    object-fit:cover; flex:none;
+    border:2px solid rgba(244,240,224,.5);
+    box-shadow:0 0 0 2px var(--tag-color);
+  }
+  .pet-tag .name{font-family:'Fraunces', serif; font-weight:600; font-size:15.5px; display:block;}
+  .pet-tag .meta{display:block; font-size:11.5px; color:#B7C6B4; font-family:'IBM Plex Mono', monospace; margin-top:1px;}
+  .pet-tag .dots{margin-left:auto; display:flex; gap:4px;}
+  .pet-tag .dot{width:7px; height:7px; border-radius:50%;}
+  .dot.atrasado{background:var(--coral);}
+  .dot.atencao{background:var(--brass);}
+
+  .sidebar-alerts{
+    margin-top:auto;
+    border-top:1px solid rgba(244,240,224,.12);
+    padding-top:14px;
+  }
+  .sidebar-alerts h2{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#A9BFA8;
+    margin:0 0 10px;
+    font-weight:600;
+  }
+  .alert-list{display:flex; flex-direction:column; gap:7px; max-height:220px; overflow:auto;}
+  .alert-chip{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(244,240,224,.05);
+    border:1px solid rgba(244,240,224,.1);
+    border-radius:8px;
+    padding:8px 10px;
+    cursor:pointer;
+    font-size:12px;
+    color:#E9E5D2;
+    text-align:left;
+  }
+  .alert-chip:hover{background:rgba(244,240,224,.1);}
+  .alert-chip .sq{width:6px; height:6px; border-radius:2px; flex:none;}
+  .alert-chip .sq.atrasado{background:var(--coral);}
+  .alert-chip .sq.atencao{background:var(--brass);}
+  .alert-chip .txt{overflow:hidden;}
+  .alert-chip b{display:block; font-family:'Fraunces', serif; font-weight:600; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .alert-chip span{color:#AEBBA9; font-family:'IBM Plex Mono', monospace; font-size:10.5px;}
+  .alert-empty{font-size:12px; color:#94A691; padding:6px 2px;}
+
+  /* ===== Main ===== */
+  .main{padding:34px 42px 60px; max-width:1000px;}
+  .pet-header{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:20px;
+    margin-bottom:22px;
+  }
+  .pet-header .who h2{font-size:32px; margin:0 0 6px; font-weight:600;}
+  .pet-header .who .sub{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .header-right{display:flex; align-items:flex-start; gap:14px; flex:none;}
+  .polaroid{
+    background:#fff;
+    padding:6px 6px 20px;
+    border-radius:2px;
+    box-shadow:0 10px 22px -10px rgba(23,42,32,.45), 0 2px 4px rgba(23,42,32,.15);
+    transform:rotate(3deg);
+    flex:none;
+  }
+  .polaroid img{
+    width:104px; height:104px; object-fit:cover; display:block; border-radius:1px;
+  }
+  .stamp{
+    display:inline-flex; align-items:center; justify-content:center;
+    border:2px solid var(--coral-ink);
+    color:var(--coral-ink);
+    border-radius:999px;
+    width:58px; height:58px;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600; font-size:11px;
+    letter-spacing:.03em;
+    transform:rotate(-9deg);
+    opacity:.82;
+    flex:none;
+    text-align:center;
+    line-height:1.1;
+    mix-blend-mode:multiply;
+  }
+  .sub .age{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--text-600);
+    background:var(--card-2);
+    border:1px solid var(--line);
+    padding:4px 10px;
+    border-radius:999px;
+  }
+  .stat-strip{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .stat{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:10px 16px;
+    display:flex; align-items:center; gap:8px;
+    box-shadow:var(--shadow-card);
+  }
+  .stat .n{font-family:'Fraunces', serif; font-weight:700; font-size:20px;}
+  .stat .l{font-size:11.5px; color:var(--text-600); font-family:'IBM Plex Mono', monospace; letter-spacing:.02em;}
+  .stat.ok .n{color:var(--teal-ink);}
+  .stat.warn .n{color:var(--brass-ink);}
+  .stat.late .n{color:var(--coral-ink);}
+
+  /* Tabs styled like folder dividers */
+  .tabs{
+    display:flex;
+    gap:2px;
+    margin-top:26px;
+    border-bottom:2px solid var(--ink-900);
+    flex-wrap:wrap;
+  }
+  .tab{
+    background:var(--card-2);
+    border:1px solid var(--line);
+    border-bottom:none;
+    padding:10px 16px 9px;
+    border-radius:10px 10px 0 0;
+    cursor:pointer;
+    font-size:13px;
+    color:var(--text-600);
+    font-weight:500;
+    display:flex; align-items:center; gap:7px;
+    transform:translateY(2px);
+    transition:transform .15s ease, background .15s ease, color .15s ease;
+    white-space:nowrap;
+  }
+  .tab svg{opacity:.7;}
+  .tab:hover{color:var(--text-900);}
+  .tab.active{
+    background:var(--ink-900);
+    color:#F8F5E6;
+    transform:translateY(0);
+    border-color:var(--ink-900);
+  }
+  .tab.active svg{opacity:1;}
+
+  .panel{
+    background:var(--ink-900);
+    border-radius:0 var(--radius-lg) var(--radius-lg) var(--radius-lg);
+    padding:22px;
+  }
+  .panel-inner{
+    background:var(--card);
+    border-radius:var(--radius-md);
+    padding:20px;
+  }
+  .panel-toolbar{
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; flex-wrap:wrap;
+  }
+  .panel-toolbar .summary{font-size:12.5px; color:var(--text-600); font-family:'IBM Plex Mono', monospace;}
+  .btn{
+    border:none; cursor:pointer; border-radius:999px;
+    padding:9px 16px; font-size:13px; font-weight:600;
+    display:inline-flex; align-items:center; gap:6px;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:focus-visible, .tab:focus-visible, .pet-tag:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--teal); outline-offset:2px;
+  }
+  .btn-primary{background:var(--ink-900); color:#F8F5E6;}
+  .btn-primary:hover{transform:translateY(-1px);}
+  .btn-ghost{background:transparent; color:var(--text-600); border:1px solid var(--line);}
+  .btn-ghost:hover{color:var(--text-900); border-color:var(--text-400);}
+
+  form.entry-form{
+    background:var(--card-2);
+    border:1px dashed var(--line);
+    border-radius:var(--radius-md);
+    padding:16px;
+    margin-bottom:16px;
+    display:none;
+  }
+  form.entry-form.open{display:block;}
+  .form-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px;}
+  .field{display:flex; flex-direction:column; gap:5px;}
+  .field label{font-size:11.5px; color:var(--text-600); font-weight:600; letter-spacing:.02em;}
+  .field input, .field textarea{
+    border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+    font-family:'IBM Plex Sans', sans-serif; font-size:13.5px; background:var(--card);
+    color:var(--text-900);
+  }
+  .field.full{grid-column:1/-1;}
+  .form-actions{display:flex; gap:8px; margin-top:14px; justify-content:flex-end;}
+
+  .records{display:flex; flex-direction:column; gap:10px;}
+  .record{
+    background:var(--card-2);
+    border-radius:var(--radius-sm);
+    padding:13px 14px;
+    display:flex; gap:12px; align-items:flex-start;
+    border-left:4px solid var(--line);
+  }
+  .record.st-ok{border-left-color:var(--teal);}
+  .record.st-atencao{border-left-color:var(--brass);}
+  .record.st-atrasado{border-left-color:var(--coral);}
+  .record .body{flex:1; min-width:0;}
+  .record .row1{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .record h3{margin:0; font-size:16px; font-weight:600;}
+  .record .date{font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--text-600);}
+  .record .meta-chips{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;}
+  .chip{
+    font-size:11px; font-family:'IBM Plex Mono', monospace;
+    background:var(--card); border:1px solid var(--line);
+    padding:2px 8px; border-radius:999px; color:var(--text-600);
+  }
+  .record .notes{font-size:13px; color:var(--text-600); margin-top:6px; line-height:1.45;}
+  .badge{
+    font-size:10.5px; font-family:'IBM Plex Mono', monospace; font-weight:600;
+    padding:3px 9px; border-radius:999px; white-space:nowrap;
+  }
+  .badge.ok{background:rgba(46,122,97,.14); color:var(--teal-ink);}
+  .badge.atencao{background:rgba(180,132,42,.16); color:var(--brass-ink);}
+  .badge.atrasado{background:rgba(189,67,42,.16); color:var(--coral-ink);}
+  .record .actions{display:flex; gap:6px; flex:none;}
+  .icon-btn{
+    background:none; border:none; cursor:pointer; padding:4px; border-radius:6px;
+    color:var(--text-400); display:flex;
+  }
+  .icon-btn:hover{color:var(--coral-ink); background:rgba(189,67,42,.08);}
+  .icon-btn.edit:hover{color:var(--brass-ink); background:rgba(180,132,42,.08);}
+
+  .empty-state{
+    text-align:center; padding:38px 20px; color:var(--text-600);
+  }
+  .empty-state .paw{opacity:.35; margin-bottom:8px;}
+  .empty-state p{margin:0; font-size:13.5px;}
+
+  .storage-note{
+    font-size:11px; color:var(--text-400); text-align:center; margin-top:18px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  /* Mobile */
+  @media (max-width: 760px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{
+      position:relative; height:auto; flex-direction:row; align-items:center;
+      overflow-x:auto; padding:16px; gap:14px;
+    }
+    .brand{flex:none;}
+    .pet-nav{flex-direction:row;}
+    .sidebar-alerts{display:none;}
+    .main{padding:22px 18px 40px;}
+    .pet-header{flex-direction:column;}
+    .tabs{overflow-x:auto; flex-wrap:nowrap;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M12 14.2c-2.6 0-5.4 1.9-5.4 4.3 0 1.4 1.1 2.1 2.5 2.1 1 0 1.8-.5 2.9-.5s1.9.5 2.9.5c1.4 0 2.5-.7 2.5-2.1 0-2.4-2.8-4.3-5.4-4.3z" fill="#F4F0E0"/><circle cx="5.2" cy="10.5" r="2.1" fill="#F4F0E0"/><circle cx="18.8" cy="10.5" r="2.1" fill="#F4F0E0"/><circle cx="8.7" cy="6.3" r="2.1" fill="#F4F0E0"/><circle cx="15.3" cy="6.3" r="2.1" fill="#F4F0E0"/></svg>
+      <div class="brand-text">
+        <p class="kicker">Prontuário doméstico</p>
+        <h1>Painel dos Pets</h1>
+      </div>
+    </div>
+
+    <nav class="pet-nav" id="petNav"></nav>
+
+    <div class="sidebar-alerts">
+      <h2>Central de alertas</h2>
+      <div class="alert-list" id="alertList"></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="pet-header">
+      <div class="who">
+        <h2 id="petName">—</h2>
+        <div class="sub">
+          <span class="age mono" id="petSubline">—</span>
+        </div>
+        <div class="stat-strip" id="statStrip"></div>
+      </div>
+      <div class="header-right">
+        <div class="polaroid"><img id="petPhoto" src="" alt=""></div>
+        <div class="stamp" id="petStamp">SRD</div>
+      </div>
+    </header>
+
+    <div class="tabs" id="tabs"></div>
+
+    <section class="panel">
+      <div class="panel-inner">
+        <div class="panel-toolbar">
+          <span class="summary" id="panelSummary"></span>
+          <button class="btn btn-primary" id="toggleForm">+ Novo registro</button>
+        </div>
+
+        <form class="entry-form" id="entryForm">
+          <div class="form-grid" id="formGrid"></div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" id="cancelForm">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="submitForm">Salvar registro</button>
+          </div>
+        </form>
+
+        <div class="records" id="records"></div>
+      </div>
+    </section>
+
+    <p class="storage-note" id="syncNote">Verificando sincronização…</p>
+  </main>
+</div>
+
+<!-- Dados editáveis dos pets: veja pets-config.js -->
+<script src="pets-config.js"></script>
+
+<!-- Sincronização entre dispositivos: veja firebase-config.js e o README -->
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+/* ================= CATEGORIAS DAS ABAS ================= */
+const CATS = {
+  veterinario: {
+    label:'Veterinário',
+    icon:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v4M6 5h4"/><path d="M9 8v4a5 5 0 0 0 10 0V9h-3"/><circle cx="19" cy="18" r="3"/><path d="M19 16.5v3M17.5 18h3"/></svg>`,
+    fields:[
+      {key:'title', label:'Motivo da consulta', type:'text', placeholder:'Ex.: Checkup anual, mancando da pata'},
+      {key:'date', label:'Data da consulta', type:'date'},
+      {key:'vet', label:'Veterinário(a) / clínica', type:'text', placeholder:'Ex.: Dra. Ana — Clínica Bicho Feliz'},
+      {key:'nextDate', label:'Próximo retorno (se marcado)', type:'date'},
+      {key:'notes', label:'Observações', type:'textarea'},
+    ]
+  },
+  vacinas: {
+    label:'Vacinas',
+    icon:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 5 5 19M9 15l-4 4M14 4l6 6M12 6l6 6M8 8l3 3M6 10l1.5 1.5"/></svg>`,
+    fields:[
+      {key:'title', label:'Vacina', type:'text', placeholder:'Ex.: V10, Antirrábica'},
+      {key:'date', label:'Data da aplicação', type:'date'},
+      {key:'nextDate', label:'Próximo reforço', type:'date'},
+      {key:'notes', label:'Observações', type:'textarea'},
+    ]
+  },
+  vermifugo: {
+    label:'Vermífugo',
+    icon:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3c3 3 5 6 5 9a5 5 0 0 1-10 0c0-3 2-6 5-9Z"/></svg>`,
+    fields:[
+      {key:'title', label:'Produto', type:'text', placeholder:'Ex.: Drontal'},
+      {key:'date', label:'Data da aplicação', type:'date'},
+      {key:'nextDate', label:'Próxima dose', type:'date'},
+      {key:'notes', label:'Observações', type:'textarea'},
+    ]
+  },
+  medicacoes: {
+    label:'Medicações',
+    icon:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="9" width="18" height="6" rx="3"/><path d="M12 9v6"/></svg>`,
+    fields:[
+      {key:'title', label:'Medicamento', type:'text', placeholder:'Ex.: Apoquel 16mg'},
+      {key:'date', label:'Início do tratamento', type:'date'},
+      {key:'dose', label:'Dose / frequência', type:'text', placeholder:'Ex.: 1 comprimido a cada 12h'},
+      {key:'nextDate', label:'Fim / retorno', type:'date'},
+      {key:'notes', label:'Observações', type:'textarea'},
+    ]
+  },
+  racao: {
+    label:'Ração',
+    icon:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1.5 11a2 2 0 0 1-2 1.8H8.5a2 2 0 0 1-2-1.8L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>`,
+    fields:[
+      {key:'title', label:'Marca / tipo', type:'text', placeholder:'Ex.: Premier Adultos'},
+      {key:'date', label:'Data da compra', type:'date'},
+      {key:'qty', label:'Quantidade (kg)', type:'text', placeholder:'Ex.: 15'},
+      {key:'cost', label:'Valor pago (R$)', type:'text', placeholder:'Ex.: 189,90'},
+      {key:'nextDate', label:'Previsão de acabar', type:'date'},
+      {key:'notes', label:'Observações', type:'textarea'},
+    ]
+  },
+  outros: {
+    label:'Outros',
+    icon:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>`,
+    fields:[
+      {key:'title', label:'Título', type:'text', placeholder:'Ex.: Banho e tosa'},
+      {key:'date', label:'Data', type:'date'},
+      {key:'nextDate', label:'Próximo evento (opcional)', type:'date'},
+      {key:'notes', label:'Observações', type:'textarea'},
+    ]
+  }
+};
+
+const STORAGE_KEY = 'pets-dashboard-records-v1';
+
+let DB = {}; // { petId: { veterinario:[...], vacinas:[...], ... } }
+let state = { pet: PETS[0].id, tab: 'veterinario', editingId: null };
+
+/* ================= SINCRONIZAÇÃO (Firebase) =================
+   Se firebase-config.js tiver uma configuração válida, o painel conecta
+   no Firestore e sincroniza os registros em tempo real entre qualquer
+   navegador/dispositivo aberto na mesma URL.
+
+   Se firebase-config.js estiver com FIREBASE_CONFIG = null (padrão),
+   o painel funciona só localmente, salvando no localStorage do navegador
+   — exatamente como antes, sem sincronização.
+
+   Veja o README.md para o passo a passo de configuração.
+*/
+let docRef = null;
+let syncMode = 'local'; // 'local' | 'connecting' | 'synced' | 'error'
+
+function emptyPetData(){
+  const o = {};
+  Object.keys(CATS).forEach(k => o[k] = []);
+  return o;
+}
+
+function ensureShape(){
+  PETS.forEach(p => {
+    if(!DB[p.id]) DB[p.id] = emptyPetData();
+    Object.keys(CATS).forEach(k => { if(!DB[p.id][k]) DB[p.id][k] = []; });
+  });
+}
+
+function setSyncStatus(mode){
+  syncMode = mode;
+  const el = document.getElementById('syncNote');
+  if(!el) return;
+  const texts = {
+    local: '💾 Salvando só neste navegador (sincronização não configurada — veja o README).',
+    connecting: '🔄 Conectando à sincronização…',
+    synced: '🔄 Sincronizado entre dispositivos.',
+    error: '⚠️ Erro de sincronização — verifique firebase-config.js e as regras do Firestore. Salvando só neste navegador por enquanto.',
+  };
+  el.textContent = texts[mode] || '';
+}
+
+async function initFirebase(){
+  if(typeof FIREBASE_CONFIG === 'undefined' || !FIREBASE_CONFIG) return false;
+  if(typeof firebase === 'undefined') return false;
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    try{ await firebase.firestore().enablePersistence({ synchronizeTabs: true }); }catch(e){ /* ok, cache offline é só um extra */ }
+    await firebase.auth().signInAnonymously();
+    docRef = firebase.firestore().collection('painel-pets').doc(STORAGE_KEY);
+    return true;
+  }catch(e){
+    console.error('Falha ao iniciar sincronização', e);
+    return false;
+  }
+}
+
+async function initStorage(){
+  const ok = await initFirebase();
+  if(ok){
+    setSyncStatus('connecting');
+    docRef.onSnapshot(snap => {
+      if(snap.exists && snap.data().payload){
+        try{ DB = JSON.parse(snap.data().payload); }catch(e){ /* mantém DB atual se vier corrompido */ }
+      }
+      ensureShape();
+      renderAll();
+      setSyncStatus('synced');
+    }, err => {
+      console.error('Erro de sincronização', err);
+      setSyncStatus('error');
+    });
+  } else {
+    let raw = null;
+    try{ raw = localStorage.getItem(STORAGE_KEY); }catch(e){}
+    if(raw){ try{ DB = JSON.parse(raw); }catch(e){} }
+    ensureShape();
+    renderAll();
+    setSyncStatus('local');
+  }
+}
+
+async function saveData(){
+  ensureShape();
+  if(docRef){
+    try{
+      await docRef.set({ payload: JSON.stringify(DB) });
+      return;
+    }catch(e){
+      console.error('Falha ao salvar na nuvem, salvando só localmente', e);
+      setSyncStatus('error');
+    }
+  }
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(DB)); }catch(e){ console.error('Falha ao salvar dados', e); }
+  renderAll();
+}
+
+function calcAge(birthISO){
+  const birth = new Date(birthISO + 'T00:00:00');
+  const now = new Date();
+  let years = now.getFullYear() - birth.getFullYear();
+  let months = now.getMonth() - birth.getMonth();
+  if(now.getDate() < birth.getDate()) months--;
+  if(months < 0){ years--; months += 12; }
+  const y = years === 1 ? '1 ano' : `${years} anos`;
+  const m = months === 1 ? '1 mês' : `${months} meses`;
+  if(years <= 0) return m;
+  if(months <= 0) return y;
+  return `${y} e ${m}`;
+}
+
+function todayISO(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+function fmtBR(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function statusFor(nextDateISO){
+  if(!nextDateISO) return null;
+  const today = todayISO();
+  const diffDays = (new Date(nextDateISO) - new Date(today)) / 86400000;
+  if(diffDays < 0) return 'atrasado';
+  if(diffDays <= 14) return 'atencao';
+  return 'ok';
+}
+
+function statusLabel(s){
+  return s === 'ok' ? 'Em dia' : s === 'atencao' ? 'Atenção' : 'Atrasado';
+}
+
+function uid(){
+  return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+
+/* ================= RENDER: SIDEBAR ================= */
+function renderPetNav(){
+  const nav = document.getElementById('petNav');
+  nav.innerHTML = '';
+  PETS.forEach(pet => {
+    const data = DB[pet.id];
+    let hasAtrasado = false, hasAtencao = false;
+    Object.keys(CATS).forEach(cat => {
+      (data[cat]||[]).forEach(r => {
+        const s = statusFor(r.nextDate);
+        if(s === 'atrasado') hasAtrasado = true;
+        else if(s === 'atencao') hasAtencao = true;
+      });
+    });
+    const btn = document.createElement('button');
+    btn.className = 'pet-tag' + (state.pet === pet.id ? ' active' : '');
+    btn.style.setProperty('--tag-color', pet.color);
+    btn.setAttribute('aria-pressed', state.pet === pet.id);
+    btn.innerHTML = `
+      <img class="pet-photo" src="${pet.photo}" alt="${pet.name}">
+      <span>
+        <span class="name">${pet.name}</span>
+        <span class="meta">${pet.breed} · ${pet.sex === 'F' ? 'Fêmea' : 'Macho'}</span>
+      </span>
+      <span class="dots">
+        ${hasAtrasado ? '<span class="dot atrasado" title="Atrasado"></span>' : ''}
+        ${hasAtencao ? '<span class="dot atencao" title="Atenção"></span>' : ''}
+      </span>
+    `;
+    btn.addEventListener('click', () => { state.pet = pet.id; state.editingId = null; renderAll(); });
+    nav.appendChild(btn);
+  });
+}
+
+function renderAlerts(){
+  const list = document.getElementById('alertList');
+  const items = [];
+  PETS.forEach(pet => {
+    Object.entries(CATS).forEach(([catKey, cat]) => {
+      (DB[pet.id][catKey]||[]).forEach(r => {
+        const s = statusFor(r.nextDate);
+        if(s === 'atrasado' || s === 'atencao'){
+          items.push({ pet, catKey, catLabel: cat.label, title: r.title || cat.label, nextDate: r.nextDate, s });
+        }
+      });
+    });
+  });
+  items.sort((a,b) => new Date(a.nextDate) - new Date(b.nextDate));
+
+  if(items.length === 0){
+    list.innerHTML = `<div class="alert-empty">Nenhum pendente. Tudo em dia 🐾</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  items.forEach(it => {
+    const chip = document.createElement('button');
+    chip.className = 'alert-chip';
+    chip.innerHTML = `
+      <span class="sq ${it.s}"></span>
+      <span class="txt">
+        <b>${it.pet.name} · ${it.title}</b>
+        <span>${it.catLabel} — ${fmtBR(it.nextDate)}</span>
+      </span>
+    `;
+    chip.addEventListener('click', () => { state.pet = it.pet.id; state.tab = it.catKey; state.editingId = null; renderAll(); });
+    list.appendChild(chip);
+  });
+}
+
+/* ================= RENDER: HEADER ================= */
+function renderHeader(){
+  const pet = PETS.find(p => p.id === state.pet);
+  document.getElementById('petName').textContent = pet.name;
+  document.getElementById('petSubline').textContent = `${calcAge(pet.birth)} de idade`;
+  document.getElementById('petStamp').textContent = pet.breed;
+  const photoEl = document.getElementById('petPhoto');
+  photoEl.src = pet.photo;
+  photoEl.alt = pet.name;
+
+  let ok=0, atencao=0, atrasado=0;
+  Object.keys(CATS).forEach(cat => {
+    (DB[pet.id][cat]||[]).forEach(r => {
+      const s = statusFor(r.nextDate);
+      if(s === 'ok') ok++;
+      else if(s === 'atencao') atencao++;
+      else if(s === 'atrasado') atrasado++;
+    });
+  });
+  const strip = document.getElementById('statStrip');
+  strip.innerHTML = `
+    <div class="stat ok"><span class="n">${ok}</span><span class="l">Em dia</span></div>
+    <div class="stat warn"><span class="n">${atencao}</span><span class="l">Atenção</span></div>
+    <div class="stat late"><span class="n">${atrasado}</span><span class="l">Atrasado</span></div>
+  `;
+}
+
+/* ================= RENDER: TABS ================= */
+function renderTabs(){
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = '';
+  Object.entries(CATS).forEach(([key, cat]) => {
+    const tab = document.createElement('button');
+    tab.className = 'tab' + (state.tab === key ? ' active' : '');
+    tab.innerHTML = `${cat.icon}<span>${cat.label}</span>`;
+    tab.addEventListener('click', () => { state.tab = key; state.editingId = null; closeForm(); renderAll(); });
+    tabsEl.appendChild(tab);
+  });
+}
+
+/* ================= RENDER: FORM ================= */
+function renderForm(){
+  const cat = CATS[state.tab];
+  const grid = document.getElementById('formGrid');
+  grid.innerHTML = '';
+  cat.fields.forEach(f => {
+    const wrap = document.createElement('div');
+    wrap.className = 'field' + (f.type === 'textarea' ? ' full' : '');
+    const input = f.type === 'textarea'
+      ? `<textarea name="${f.key}" rows="2" placeholder="${f.placeholder||''}"></textarea>`
+      : `<input name="${f.key}" type="${f.type}" placeholder="${f.placeholder||''}">`;
+    wrap.innerHTML = `<label>${f.label}</label>${input}`;
+    grid.appendChild(wrap);
+  });
+}
+
+function openForm(prefill){
+  renderForm();
+  const form = document.getElementById('entryForm');
+  form.classList.add('open');
+  if(prefill){
+    Object.entries(prefill).forEach(([k,v]) => {
+      const el = form.elements[k];
+      if(el) el.value = v || '';
+    });
+  }
+  document.getElementById('submitForm').textContent = prefill ? 'Salvar alterações' : 'Salvar registro';
+}
+
+function closeForm(){
+  const form = document.getElementById('entryForm');
+  form.classList.remove('open');
+  form.reset();
+  state.editingId = null;
+}
+
+/* ================= RENDER: RECORDS ================= */
+function renderRecords(){
+  const cat = CATS[state.tab];
+  const list = DB[state.pet][state.tab] || [];
+  const container = document.getElementById('records');
+  const summary = document.getElementById('panelSummary');
+
+  const sorted = [...list].sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
+
+  if(state.tab === 'racao'){
+    const totalCost = list.reduce((s,r) => s + (parseFloat((r.cost||'0').toString().replace(',','.')) || 0), 0);
+    const totalKg = list.reduce((s,r) => s + (parseFloat((r.qty||'0').toString().replace(',','.')) || 0), 0);
+    summary.textContent = list.length ? `${list.length} compra(s) · ${totalKg.toFixed(1)} kg · R$ ${totalCost.toFixed(2).replace('.',',')} no total` : '';
+  } else {
+    summary.textContent = list.length ? `${list.length} registro(s)` : '';
+  }
+
+  if(sorted.length === 0){
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="paw">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M12 14.2c-2.6 0-5.4 1.9-5.4 4.3 0 1.4 1.1 2.1 2.5 2.1 1 0 1.8-.5 2.9-.5s1.9.5 2.9.5c1.4 0 2.5-.7 2.5-2.1 0-2.4-2.8-4.3-5.4-4.3z" fill="#22301F"/><circle cx="5.2" cy="10.5" r="2.1" fill="#22301F"/><circle cx="18.8" cy="10.5" r="2.1" fill="#22301F"/><circle cx="8.7" cy="6.3" r="2.1" fill="#22301F"/><circle cx="15.3" cy="6.3" r="2.1" fill="#22301F"/></svg>
+        </div>
+        <p>Nenhum registro de ${cat.label.toLowerCase()} ainda para ${PETS.find(p=>p.id===state.pet).name}. Adicione o primeiro.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = '';
+  sorted.forEach(r => {
+    const s = statusFor(r.nextDate);
+    const el = document.createElement('div');
+    el.className = 'record' + (s ? ` st-${s}` : '');
+    const chips = [];
+    if(r.vet) chips.push(`<span class="chip">${r.vet}</span>`);
+    if(r.dose) chips.push(`<span class="chip">${r.dose}</span>`);
+    if(r.qty) chips.push(`<span class="chip">${r.qty} kg</span>`);
+    if(r.cost) chips.push(`<span class="chip">R$ ${r.cost}</span>`);
+    el.innerHTML = `
+      <div class="body">
+        <div class="row1">
+          <h3>${r.title || '(sem título)'}</h3>
+          <span class="date mono">${fmtBR(r.date)}</span>
+          ${s ? `<span class="badge ${s}">${statusLabel(s)} · ${fmtBR(r.nextDate)}</span>` : ''}
+        </div>
+        ${chips.length ? `<div class="meta-chips">${chips.join('')}</div>` : ''}
+        ${r.notes ? `<p class="notes">${r.notes}</p>` : ''}
+      </div>
+      <div class="actions">
+        <button class="icon-btn edit" title="Editar" aria-label="Editar registro">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>
+        </button>
+        <button class="icon-btn del" title="Excluir" aria-label="Excluir registro">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3m-8 0 1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13"/></svg>
+        </button>
+      </div>
+    `;
+    el.querySelector('.edit').addEventListener('click', () => {
+      state.editingId = r.id;
+      openForm(r);
+    });
+    el.querySelector('.del').addEventListener('click', async () => {
+      DB[state.pet][state.tab] = DB[state.pet][state.tab].filter(x => x.id !== r.id);
+      await saveData();
+      renderAll();
+    });
+    container.appendChild(el);
+  });
+}
+
+/* ================= EVENTOS ================= */
+document.getElementById('toggleForm').addEventListener('click', () => {
+  const form = document.getElementById('entryForm');
+  if(form.classList.contains('open')){
+    closeForm();
+  } else {
+    state.editingId = null;
+    openForm(null);
+  }
+});
+document.getElementById('cancelForm').addEventListener('click', closeForm);
+
+document.getElementById('entryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const cat = CATS[state.tab];
+  const record = {};
+  cat.fields.forEach(f => { record[f.key] = form.elements[f.key].value.trim(); });
+
+  if(!record.date){
+    alert('Informe a data do registro.');
+    return;
+  }
+
+  if(state.editingId){
+    const idx = DB[state.pet][state.tab].findIndex(r => r.id === state.editingId);
+    if(idx > -1){
+      DB[state.pet][state.tab][idx] = { ...DB[state.pet][state.tab][idx], ...record };
+    }
+  } else {
+    record.id = uid();
+    DB[state.pet][state.tab].push(record);
+  }
+  await saveData();
+  closeForm();
+  renderAll();
+});
+
+/* ================= RENDER PRINCIPAL ================= */
+function renderAll(){
+  renderPetNav();
+  renderAlerts();
+  renderHeader();
+  renderTabs();
+  renderRecords();
+}
+
+(async function init(){
+  PETS.forEach(p => { DB[p.id] = emptyPetData(); });
+  await initStorage();
+})();
+</script>
+</body>
+</html>
